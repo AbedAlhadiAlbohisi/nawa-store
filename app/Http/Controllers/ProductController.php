@@ -8,6 +8,7 @@ use App\Models\product;
 use App\Models\ProductImage;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
@@ -64,6 +65,7 @@ class ProductController extends Controller
             $path = $file->store('uploads/images', 'public');
             $data['image'] = $path;
         }
+        $data['user_id'] = Auth::id();
         $product = Product::create($data);
         if ($request->hasFile('gallery')) {
             foreach ($request->file('gallery') as $file) {

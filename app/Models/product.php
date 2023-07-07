@@ -6,6 +6,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use NumberFormatter;
 
@@ -28,14 +29,14 @@ class product extends Model
      //   الي انا بدي اسمح انها تستخدم في الماس اسايمنت product تحتوي على اسماء الحقول الي بالجدول تبع الfillable تبعت الarrayال
     protected $fillable = [
         'name','slug','category_id','description','short_descripion','price',
-        'compare_price','image','status'
+        'compare_price','image','status','user_id'
     ];
 
     protected static function booted()
     {
         //قامت دالة booted بتطبيق نطاق عام للاستعلامات
         static::addGlobalScope('owner', function(Builder $query){
-            $query->where('user_id','=','1');
+            $query->where('user_id','=',Auth::id());
         });
 
     }
