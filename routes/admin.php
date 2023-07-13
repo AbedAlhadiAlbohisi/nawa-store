@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Middleware\EnsureUserType;
+use App\Models\Order;
 use Illuminate\Support\Facades\Route;
 
 
@@ -15,4 +16,5 @@ Route::middleware(['auth','auth.type:admin,super-admin'])->prefix('/admin')->gro
 
  Route::resource('/products', ProductController::class);
  Route::resource('/categories', CategoryController::class);
+ Route::resource('/orders', OrderController::class);
  });

@@ -11,14 +11,25 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View ;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
 {
+    public function __construct(request $request){
+
+         $categories = category::all();///collection array
+
+         View::share([
+             'categories' => $categories ,
+             'status_options'=> product::statusOptions()
+             ]);
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(request $request)
     {
 
         $products = Product::leftjoin('categories', 'categories.id', '=', 'products.category_id')
@@ -26,8 +37,9 @@ class ProductController extends Controller
                 'products.*',
                 'categories.name as category_name'
             ])
+            ->filter($request->query()) //الكل أو الاستعلام هي نفسها
             // ->withoutGlobalScope('owner')  // نستخدمه لرفض النطاق العام للاستعلامات
-             // ->active()
+            // ->active()
             // ->status('archived')
             ->paginate(5);
         $categories = Category::all();
@@ -43,15 +55,10 @@ class ProductController extends Controller
     public function create()
     {
         //
-        $categories = category::all();
-        return view('admin.products.create',[
-            'product'=>new product(),
-            'categories' => $categories,
-            // عرفناها على مستوى الموديل بنحط الثوابت بالموديل وبنستدعيه
-            'status_options'=>product::statusOptions(),
+
+        return view('admin.products.create', [
+            'product' => new product(),
         ]);
-
-
     }
 
     /**
@@ -59,6 +66,7 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
+
         $data = $request->validated();
         if ($request->hasFile('image')) {
             $file = $request->file('image');
@@ -76,8 +84,8 @@ class ProductController extends Controller
             }
         }
         return redirect()
-        ->route('products.index')
-        ->with('success',"product({$product->name})created");  //add flash mesge
+            ->route('products.index')
+            ->with('success', "product({$product->name})created");  //add flash mesge
     }
 
     // public function store(Request $request)
@@ -138,13 +146,12 @@ class ProductController extends Controller
      */
     public function edit(product $product)
     {
-        $categories = category::all();
+
         $gallery = ProductImage::where('product_id', '=', $product->id)->get();
-        return view('admin.products.edit' , [
+        return view('admin.products.edit', [
             'product' => $product,
-            'categories' => $categories,
             'gallery' => $gallery,
-            'status_options'=> product::statusOptions(),
+
         ]);
     }
 
@@ -178,9 +185,9 @@ class ProductController extends Controller
         }
         $old_image = $product->image;
         $product->update($data);
-          return redirect()
-          ->route('products.index')
-          ->with('success',"product({$product->name})update") ;//get
+        return redirect()
+            ->route('products.index')
+            ->with('success', "product({$product->name})update"); //get
     }
 
     /**
@@ -193,24 +200,25 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()
-        ->route('products.index')
-        ->with('success',"product({$product->name})deleted") ;//get
+            ->route('products.index')
+            ->with('success', "product({$product->name})deleted"); //get
 
 
     }
-    public function trashed(){
-        $products=product::onlyTrashed()->paginate();
-        return view ('admin.products.trashed',[
+    public function trashed()
+    {
+        $products = product::onlyTrashed()->paginate();
+        return view('admin.products.trashed', [
             'products' => $products,
             'title' => 'Trashed List'
         ]);
-
     }
-    public function restore($id){
+    public function restore($id)
+    {
         $product = Product::onlyTrashed()->findOrFail($id);
         $product->restore();
         return redirect()->route('products.index')
-        ->with('success', "Product ({$product->name}) Restored");
+            ->with('success', "Product ({$product->name}) Restored");
     }
 
     public function forceDelete($id)
@@ -221,6 +229,6 @@ class ProductController extends Controller
             Storage::disk('public')->delete($product->image);
         }
         return redirect()->route('products.index')
-        ->with('success', "Product ({$product->name}) Deleted forever!");
+            ->with('success', "Product ({$product->name}) Deleted forever!");
     }
 }

@@ -11,11 +11,28 @@ class ProductImage extends Model
     use HasFactory;
 
     protected $fillable = [
-        'product_id','image',
+        'product_id', 'image',
+    ];
+
+    protected $appends = [
+        'url',
+    ];
+
+    protected $hidden = [
+        'image','created_at' , 'updated_at'
     ];
 
     public function getUrlAttribute()
     {
         return Storage::disk('public')->url($this->image);
     }
+
+    public function product()
+    {
+        return $this -> BelongsTo(product::class,'')->withDefault([
+            'name'=>'no images',
+            //'image'=>
+        ]);
+    }
+
 }

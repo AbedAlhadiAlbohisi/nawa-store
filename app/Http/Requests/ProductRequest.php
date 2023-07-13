@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProductRequest extends FormRequest
 {
@@ -49,10 +50,13 @@ class ProductRequest extends FormRequest
 
     {
          return
+        //  [
+        //     Response::HTTP_BAD_REQUEST
+        //  ];
             [
                 'required' => 'attribute field is required!!',
                 'unique' => 'The value already exists!',
-                'name.required' =>'The product name is mandatory!'
+                'name.required' =>'The product name is mandatory!',
             ];
     }
 }
