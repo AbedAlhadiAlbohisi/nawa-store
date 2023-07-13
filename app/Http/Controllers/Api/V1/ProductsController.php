@@ -61,7 +61,7 @@ class ProductsController extends Controller
         ->findOrFail($id);
 
     }
-
+    
     /**
      * Update the specified resource in storage.
      */
