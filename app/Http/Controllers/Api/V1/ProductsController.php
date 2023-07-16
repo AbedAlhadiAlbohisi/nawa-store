@@ -15,6 +15,10 @@ class ProductsController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum')->except('index', 'show');
+    }
 
     public function index(Request $request)
     {
@@ -30,6 +34,12 @@ class ProductsController extends Controller
     public function store(ProductRequest $request)
     {
         //
+
+        $user = $request->user('sanctum');
+        if (!$user->tokenCan('products.create')) {
+            abort(403);
+        }
+
         $data = $request->validated();
         if ($request->hasFile('image')) {
             $file = $request->file('image');
@@ -61,16 +71,24 @@ class ProductsController extends Controller
         ->findOrFail($id);
 
     }
-    
+
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request,  Product $product)
     {
         //
-        $product = product::findOrFail($id);
 
-        $data = $request->validated();
+        $user = $request->user('sanctum');
+        if (!$user->tokenCan('products.update')) {
+            abort(403);
+        }
+        $data = $request->validate([
+            'name' => ['sometimes', 'required'],
+            'category_id' => ['sometimes', 'required'],
+            'price' => ['sometimes', 'required', 'numeric', 'min:0']
+        ]);
+
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $path = $file->store('uploads/images', 'public');
@@ -101,8 +119,19 @@ class ProductsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, Product $product)
     {
         //
+        $user = $request->user('sanctum');
+        if (!$user->tokenCan('products.delete')) {
+            return response([
+                'message' => 'Forbidden'
+            ], 403);
+        }
+        $product->delete();
+        return [
+            'message' => 'Product deleted',
+            // 'product' => $product,
+        ];
     }
 }
